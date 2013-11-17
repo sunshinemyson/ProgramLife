@@ -1,0 +1,6 @@
+[submodule "Perl_Translate_Tool"]
+	path = Script/perl/Translate_Tool_Dev
+	url = git@github.com:sunshinemyson/Translate_Tool_Dev.git
+[submodule "Nandflash_simulator"]
+	path = C&CPLUSPLUS/Nandflash_Simulator
+	url = git@github.com:sunshinemyson/Nandflash_Simulator.git
