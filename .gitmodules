@@ -4,3 +4,6 @@
 [submodule "Nandflash_simulator"]
 	path = C&CPLUSPLUS/Nandflash_Simulator
 	url = git@github.com:sunshinemyson/Nandflash_Simulator.git
+[submodule "MetaProgram"]
+	path = C&CPLUSPLUS/MetaProgram
+	url = git@github.com:sunshinemyson/MetaProgram.git
