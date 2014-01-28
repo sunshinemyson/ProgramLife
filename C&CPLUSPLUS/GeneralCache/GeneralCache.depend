@@ -1,5 +1,38 @@
 # depslib dependency file v1.0
-1389447467 source:d:\programlife\c&cplusplus\generalcache\main.c
+1390123363 source:e:\个人文件夹\programing\programlife\c&cplusplus\generalcache\client.c
+	"Client.h"
+	"GCache_pub.h"
+	"stdio.h"
+	"string.h"
+	"stdlib.h"
+
+1390123363 e:\个人文件夹\programing\programlife\c&cplusplus\generalcache\client.h
+	"GCache_Type.h"
+	"GCache_pub.h"
+
+1390123363 e:\个人文件夹\programing\programlife\c&cplusplus\generalcache\gcache_type.h
+
+1390123363 e:\个人文件夹\programing\programlife\c&cplusplus\generalcache\gcache_pub.h
+	"GCache_Type.h"
+
+1390123363 source:e:\个人文件夹\programing\programlife\c&cplusplus\generalcache\client.h
+	"GCache_Type.h"
+	"GCache_pub.h"
+
+1390123363 source:e:\个人文件夹\programing\programlife\c&cplusplus\generalcache\common.h
+
+1390123363 source:e:\个人文件夹\programing\programlife\c&cplusplus\generalcache\gcache_impl.c
+	"GCache_pub.h"
+	"stdio.h"
+	"stdlib.h"
+	"assert.h"
+
+1390123363 source:e:\个人文件夹\programing\programlife\c&cplusplus\generalcache\gcache_pub.h
+	"GCache_Type.h"
+
+1390123363 source:e:\个人文件夹\programing\programlife\c&cplusplus\generalcache\gcache_type.h
+
+1390873896 source:e:\个人文件夹\programing\programlife\c&cplusplus\generalcache\main.c
 	<stdio.h>
 	<string.h>
 	<stdlib.h>
@@ -8,38 +41,5 @@
 	"GCache_pub.h"
 	"Common.h"
 
-1389447274 d:\programlife\c&cplusplus\generalcache\client.h
-	"GCache_Type.h"
-	"GCache_pub.h"
-
-1389447275 d:\programlife\c&cplusplus\generalcache\gcache_type.h
-
-1389447275 d:\programlife\c&cplusplus\generalcache\gcache_pub.h
-	"GCache_Type.h"
-
-1389106360 d:\programlife\c&cplusplus\generalcache\common.h
-
-1389447313 source:d:\programlife\c&cplusplus\generalcache\client.c
-	"Client.h"
-	"GCache_pub.h"
-	"stdio.h"
-	"string.h"
-	"stdlib.h"
-
-1389447274 source:d:\programlife\c&cplusplus\generalcache\client.h
-	"GCache_Type.h"
-	"GCache_pub.h"
-
-1389447275 source:d:\programlife\c&cplusplus\generalcache\gcache_impl.c
-	"GCache_pub.h"
-	"stdio.h"
-	"stdlib.h"
-	"assert.h"
-
-1389106360 source:d:\programlife\c&cplusplus\generalcache\common.h
-
-1389447275 source:d:\programlife\c&cplusplus\generalcache\gcache_pub.h
-	"GCache_Type.h"
-
-1389447275 source:d:\programlife\c&cplusplus\generalcache\gcache_type.h
+1390123363 e:\个人文件夹\programing\programlife\c&cplusplus\generalcache\common.h
 

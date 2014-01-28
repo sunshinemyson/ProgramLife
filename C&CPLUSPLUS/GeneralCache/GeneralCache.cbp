@@ -49,6 +49,10 @@
 		<Unit filename="GCache_pub.h">
 			<Option compile="1" />
 		</Unit>
+		<Unit filename="TimeRecorder/TimeRecorder_pub.h" />
+		<Unit filename="TimeRecorder/TimerRecoder_core.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -57,6 +61,15 @@
 			<envvars />
 			<debugger />
 			<lib_finder disable_auto="1" />
+			<DoxyBlocks>
+				<comment_style block="5" line="0" />
+				<doxyfile_project />
+				<doxyfile_build />
+				<doxyfile_warnings />
+				<doxyfile_output />
+				<doxyfile_dot />
+				<general />
+			</DoxyBlocks>
 		</Extensions>
 	</Project>
 </CodeBlocks_project_file>
