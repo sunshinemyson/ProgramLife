@@ -1,6 +1,9 @@
 #include "TimeRecorder_pub.h"
 
-#include "Common.h"
+#include <assert.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 
 ///! all internal typedef or macro should be move to another private definition file in the future
 typedef struct _TIME_CLASS_MAP_EXTEND{
@@ -28,7 +31,7 @@ static inline Ptr_Client newClient( const ClientID aClientID );
 //aBefore == NULL 表示我想要把节点直接放在pCurrentClient前面（如果不是空链表）
 static bool insertClientBefore( Ptr_Client aInsert, Ptr_Client aBefore );
 //aBefore == NULL 表示我想要把节点直接放在pCurrentClient后面（如果不是空链表）
-static bool insertClientAfter( Ptr_Client aInsert, Ptr_Client aAfter );
+//static bool insertClientAfter( Ptr_Client aInsert, Ptr_Client aAfter );
 static bool removeClient( Ptr_Client aRemove );
 static Ptr_Client findClient( const ClientID );
 
@@ -85,29 +88,300 @@ SINGLE_FLOW_BEGIN
         memset( (void*)pNewMap, 0, sizeof(TCME)*len );
         clientNode->mTCM = pNewMap;
 
-        //!!!todo error
-        for( pMap = aTCMap; pMap < aTCMAP + len; ++pMap ){
+        // 复制client端提供的记录类型信息
+        for( pMap = aTCMap; pMap < aTCMap + len; ++pMap ){
 
             unsigned int len_name = pMap->szClassName;
 
-            pNewMap->szClassName = len_name;
-            pNewMap->tClassID = aClientID;
-            pNewMap->pClassName = (char*)malloc( sizeof(char)* pMap->szClassName );
-            strncpy( pNewMap->pClassName, pMap->pClassName, pMap->szClassName );
+            pNewMap->mTCM.szClassName = len_name;
+            pNewMap->mTCM.tClassID = aTCMap->tClassID;
+            pNewMap->mTCM.pClassName = (char*)malloc( sizeof(char)* pMap->szClassName );
+            strncpy( pNewMap->mTCM.pClassName, pMap->pClassName, pMap->szClassName );
+            pNewMap->timeCounter = 0;
 
             pNewMap++;
         }
-
+        assert( pMap == aTCMap + len );
         //! init time class map
         rValue = true;
     }
     else{
-        rValue = true;
+        assert(false);  // client 端不应该连续调用该函数来注册自己
+        rValue = false;
     }
-
-
 SINGLE_FLOW_END
 
     return rValue;
 }
 
+/// stopTimerRecorder()
+bool stopTimerRecorder( const ClientID aClientID )
+{
+    bool rValue;
+    Ptr_Client clientNode;
+
+    rValue = false;
+    clientNode = NULL;
+SINGLE_FLOW_BEGIN
+    clientNode = findClient( aClientID );
+    if( clientNode != NULL )
+    {
+        PTR_TCME pTCMap = clientNode->mTCM;
+        if( clientNode->mMapSize != 0 )
+        {
+            for(; pTCMap < clientNode->mTCM + clientNode->mMapSize; ++pTCMap )
+            {
+                if( pTCMap->mTCM.pClassName ) free( pTCMap->mTCM.pClassName );
+            }
+            free( clientNode->mTCM );
+        }
+        removeClient( clientNode );
+        rValue = true;
+    }
+    else
+    {
+        assert( false );    //不应该去释放一个从未注册的clien
+    }
+SINGLE_FLOW_END
+
+    return rValue;
+}//End stopTimerRecorder()
+
+//logTime()
+bool logTime( ClientID aClientID, unsigned int aTime ){
+    bool rValue;
+    Ptr_Client clientNode;
+
+    rValue = false;
+    clientNode = findClient( aClientID );
+    if( clientNode ){
+        clientNode->totalTimeCounter += aTime;
+        rValue = true;
+    }
+    else{
+        assert( false );
+    }
+
+    return rValue;
+}// end logTime()
+
+//logTimeClass()
+bool logTimeClass
+    (
+     const ClientID aClientID
+     , unsigned int aTCID
+     , unsigned int aTime
+    ){
+bool rValue;
+Ptr_Client clientNode;
+PTR_TCME pMap;
+clientNode = findClient( aClientID );
+
+SINGLE_FLOW_BEGIN
+
+BREAK_IF_FALSE( clientNode != NULL );
+BREAK_IF_FALSE( clientNode->mTCM != NULL && clientNode->mMapSize > 0 );
+
+pMap = clientNode->mTCM;
+BREAK_IF_FALSE( pMap != NULL );
+for( ; pMap < clientNode->mTCM + clientNode->mMapSize; pMap++ ){
+    if( pMap->mTCM.szClassName == aClientID ){
+        pMap->timeCounter += aTime;
+        break;
+    }
+}
+
+BREAK_IF_FALSE( pMap < clientNode->mTCM + clientNode->mMapSize );   //! can't find given time class
+rValue = true;
+
+SINGLE_FLOW_END
+
+return rValue;
+}
+
+//buildReport( )
+bool buildReport( const ClientID aClientID, char* aRpt ){
+bool rValue;
+Ptr_Client ptrClientNode;
+PTR_TCME ptrMap;
+
+const char* TITLE = "\nTime Record Report Start -->\n";
+const char* Total_Format = "Total time record : %d\n";
+const char* Each_Class_Format = "[%s] record : %d\n";
+const char* Tail = "Time Record Report End <--\n";
+
+aRpt = NULL;
+rValue = false;
+ptrClientNode = findClient( aClientID );
+SINGLE_FLOW_BEGIN
+BREAK_IF_TRUE( ptrClientNode == NULL );
+
+ptrMap = ptrClientNode->mTCM;
+
+//0. build Header string
+if( NULL == aRpt ){
+    printf( "%s",TITLE );
+}
+//1. build Total information
+    {
+    //TO-DO 如何获得准确的字串长度？
+    char* pTotalInfor = (char*)malloc( sizeof(char)*( strlen( Total_Format ) + 10 ) );
+    memset( pTotalInfor, 0, sizeof(char)*( strlen( Total_Format ) + 10 ) );
+    sprintf( pTotalInfor, Total_Format, ptrClientNode->totalTimeCounter );
+    if( aRpt == NULL ){
+        printf( "%s",pTotalInfor );
+        }
+    }
+//2. build each class if any
+if( ptrMap ){
+    for( ;ptrMap < ptrClientNode->mTCM + ptrClientNode->mMapSize; ++ptrMap ){
+        char* pItem;
+        unsigned int szItem;
+
+        szItem = sizeof(char)*                          \
+                (                                       \
+                 ptrMap->mTCM.szClassName   \
+                 + strlen( Each_Class_Format )          \
+                 + 10                                   \
+                 );
+        pItem = (char*)malloc( szItem );
+        sprintf( pItem, Each_Class_Format, ptrMap->mTCM.pClassName, ptrMap->timeCounter );
+        if( aRpt == NULL ){
+            printf( "%s", pItem );
+        }
+    }// End for
+}// end if
+
+//3. build tail
+if( NULL == aRpt ){
+    printf( "%s", Tail );
+}
+
+
+SINGLE_FLOW_END
+
+return rValue;
+}
+
+// Private Function implementation
+Ptr_Client newClient( const ClientID aClientID ){
+    Ptr_Client pClient = (Ptr_Client)malloc( sizeof( Client ) );
+
+    if( NULL == pClient ){
+        assert( false );
+        return NULL;
+    }
+
+    memset( pClient, 0, sizeof( Client ) );
+    pClient->mID = aClientID;
+
+    return pClient;
+}
+
+/////////////////////////////////////////////////
+/// \brief 插入一个节点
+///
+/// \param aClient : pointer to client need insert
+/// \param before : where to insert
+/// \return true if insert successful else false
+///
+/////////////////////////////////////////////////
+bool insertClientBefore( Ptr_Client aClient, Ptr_Client before ){
+    bool rValue;
+    Ptr_Client p;
+
+    rValue = false;
+
+    SINGLE_FLOW_BEGIN
+    BREAK_IF_TRUE( aClient == NULL );
+    if( NULL == before ){
+        p = gTimer.pCurrentClient;
+    }
+    else{
+        while( p != NULL && p != before ){
+            p = p->pNext;
+        }
+        if( p != before ){
+            p = gTimer.pCurrentClient;
+            while( p != NULL && p != before ){
+                p = p->pPre;
+            }
+        }
+        if( p != before ){//can't find before in list
+            assert( false );
+            break;
+        }
+    }
+
+    if( NULL == p ){//Empty Link list
+        gTimer.pCurrentClient = aClient;
+        break;
+    }
+    else{
+        aClient->pPre = p->pPre;
+        p->pPre->pNext = aClient;
+        p->pPre = aClient;
+        aClient->pNext = p;
+    }
+
+    rValue = true;
+
+    SINGLE_FLOW_END
+
+    return rValue;
+}
+
+/////////////////////////////////////////////////
+/// \brief find client with given client id
+///
+/// \param aClientID client identify
+/// \return Ptr_Client NULL if not find
+///
+/////////////////////////////////////////////////
+Ptr_Client findClient( const ClientID aClientID ){
+    Ptr_Client rPtr;
+
+    rPtr = gTimer.pCurrentClient;
+    while( rPtr != NULL && rPtr->mID != aClientID ){
+        rPtr = rPtr->pNext;
+    }
+    if( !rPtr ){
+            rPtr = gTimer.pCurrentClient->pPre;
+        while( rPtr != NULL && rPtr->mID != aClientID ){
+            rPtr = rPtr->pPre;
+        }
+    }
+
+    return rPtr;
+}
+
+/////////////////////////////////////////////////
+/// \brief
+///
+/// \param
+/// \param
+/// \return
+///
+/////////////////////////////////////////////////
+bool removeClient( Ptr_Client deleteNode ){
+    bool rValue;
+
+    rValue = false;
+
+    SINGLE_FLOW_BEGIN
+    if( findClient( deleteNode->mID ) )
+    {
+        deleteNode->pPre->pNext = deleteNode->pNext;
+        deleteNode->pNext->pPre = deleteNode->pPre;
+        if( gTimer.pCurrentClient == deleteNode ){
+            gTimer.pCurrentClient = ( deleteNode->pPre ) ? ( deleteNode->pPre ) : deleteNode->pNext;
+        }
+
+        free( deleteNode );
+        rValue = true;
+        break;
+    }
+    SINGLE_FLOW_END
+
+    return rValue;
+}

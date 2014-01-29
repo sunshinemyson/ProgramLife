@@ -1,6 +1,8 @@
 #ifndef TIMERECORDER_PUB_H_INCLUDED
 #define TIMERECORDER_PUB_H_INCLUDED
 
+#include "..\Common.h"
+
 //! 注册到时间记录器的客户端ID。
 /*! More detailed enum description. */
 typedef unsigned int ClientID;enum{
@@ -58,7 +60,7 @@ bool stopTimerRecorder( const ClientID aClientID );
 /// \return
 ///
 /////////////////////////////////////////////////
-bool logTime( const ClientID );
+bool logTime( const ClientID, unsigned int aTime );
 
 /////////////////////////////////////////////////
 /// \brief client log time with class of time
@@ -68,15 +70,17 @@ bool logTime( const ClientID );
 /// \return true log success else false
 ///
 /////////////////////////////////////////////////
-bool logTimeWithClassID( const ClientID aClientID, unsigned int aTCID );
+bool logTimeClass( const ClientID aClientID, unsigned int aTCID, unsigned int aTime );
 
 /////////////////////////////////////////////////
 /// \brief create time report for client
 ///
 /// \param aClientID client identify
+/// \param aRpt if NULL, report will be show in stdout, allocate
+/// memory for report and return it to client
 /// \return true if build success else false
 ///
 /////////////////////////////////////////////////
-bool buildReport( const ClientID aClientID );
+bool buildReport( const ClientID aClientID, char* aRpt );
 
 #endif // TIMERECORDER_PUB_H_INCLUDED
