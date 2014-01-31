@@ -2,6 +2,7 @@
 #define TIMERECORDER_PUB_H_INCLUDED
 
 #include "..\Common.h"
+#include "..\GCache_Type.h"
 
 //! 注册到时间记录器的客户端ID。
 /*! More detailed enum description. */

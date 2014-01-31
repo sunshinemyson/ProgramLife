@@ -21,15 +21,12 @@
 #define BREAK_IF_TRUE(_C) if(_C) break
 #endif // BREAK_IF_TRUE
 
-#ifndef bool
-typedef enum{
-    false = 0,
-    true = !false
-}bool;
-#endif // bool
-
 #ifndef NULL
 #define NULL ((void*)(0))
 #endif // NULL
+
+#ifndef COMPILE_ASSERT
+#define COMPILE_ASSERT( _b ) do{ int _##__LINE__##_[ _b?1:0 ]; } while(0)
+#endif // COMPILE_ASSERT
 
 #endif // COMMON_H_INCLUDED

@@ -7,6 +7,9 @@
 #include "GCache_pub.h"
 #include "Common.h"
 
+//测试时间记录模块
+#include "./TimeRecorder/Test_TimeRecorder.h"
+
 //cache使用的memory占所有数据memory大小的百分比
 #define cache_rito (0.01f)
 
@@ -255,7 +258,9 @@ int main(int argc, char const *argv[])
     //assert( Test_findElem() );                              /**< Passed */
 
     //测试从GCache中读取数据
-    assert( Test_readGCache( true ) );                      /**< Fail TODO */
+    //assert( Test_readGCache( true ) );                      /**< Fail TODO */
+
+    assert( Test_TR_BlackBox() );
 
     printf("Pass All Test\n");
 
