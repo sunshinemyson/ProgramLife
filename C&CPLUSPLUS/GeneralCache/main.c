@@ -260,6 +260,7 @@ int main(int argc, char const *argv[])
     //测试从GCache中读取数据
     //assert( Test_readGCache( true ) );                      /**< Fail TODO */
 
+    //从功能上对TimeRecorder进行测试
     assert( Test_TR_BlackBox() );
 
     printf("Pass All Test\n");

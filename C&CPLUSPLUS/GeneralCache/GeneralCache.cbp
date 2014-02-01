@@ -49,6 +49,10 @@
 		<Unit filename="GCache_pub.h">
 			<Option compile="1" />
 		</Unit>
+		<Unit filename="TimeRecorder/Test_TimeRecorder.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="TimeRecorder/Test_TimeRecorder.h" />
 		<Unit filename="TimeRecorder/TimeRecorder_pub.h" />
 		<Unit filename="TimeRecorder/TimerRecoder_core.c">
 			<Option compilerVar="CC" />

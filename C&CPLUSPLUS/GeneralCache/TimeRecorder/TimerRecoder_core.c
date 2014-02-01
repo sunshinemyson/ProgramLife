@@ -87,15 +87,15 @@ SINGLE_FLOW_BEGIN
         PTR_TCME pNewMap = (PTR_TCME)malloc( sizeof(TCME)*len );
         memset( (void*)pNewMap, 0, sizeof(TCME)*len );
         clientNode->mTCM = pNewMap;
+        clientNode->mMapSize = len;
 
         // 复制client端提供的记录类型信息
         for( pMap = aTCMap; pMap < aTCMap + len; ++pMap ){
 
-            unsigned int len_name = pMap->szClassName;
-
-            pNewMap->mTCM.szClassName = len_name;
-            pNewMap->mTCM.tClassID = aTCMap->tClassID;
-            pNewMap->mTCM.pClassName = (char*)malloc( sizeof(char)* pMap->szClassName );
+            pNewMap->mTCM.szClassName = pMap->szClassName;
+            pNewMap->mTCM.tClassID = pMap->tClassID;
+            pNewMap->mTCM.pClassName = (char*)malloc( sizeof(char)* pMap->szClassName + 1 );
+            memset( pNewMap->mTCM.pClassName, 0, sizeof(char)* pMap->szClassName + 1 );
             strncpy( pNewMap->mTCM.pClassName, pMap->pClassName, pMap->szClassName );
             pNewMap->timeCounter = 0;
 
@@ -175,6 +175,8 @@ bool logTimeClass
 bool rValue;
 Ptr_Client clientNode;
 PTR_TCME pMap;
+
+rValue = false;
 clientNode = findClient( aClientID );
 
 SINGLE_FLOW_BEGIN
@@ -185,11 +187,13 @@ BREAK_IF_FALSE( clientNode->mTCM != NULL && clientNode->mMapSize > 0 );
 pMap = clientNode->mTCM;
 BREAK_IF_FALSE( pMap != NULL );
 for( ; pMap < clientNode->mTCM + clientNode->mMapSize; pMap++ ){
-    if( pMap->mTCM.szClassName == aClientID ){
+
+    if( pMap->mTCM.tClassID == aTCID ){
         pMap->timeCounter += aTime;
         break;
     }
 }
+clientNode->totalTimeCounter += aTime;  //记录到总时间
 
 BREAK_IF_FALSE( pMap < clientNode->mTCM + clientNode->mMapSize );   //! can't find given time class
 rValue = true;
@@ -228,6 +232,7 @@ if( NULL == aRpt ){
     char* pTotalInfor = (char*)malloc( sizeof(char)*( strlen( Total_Format ) + 10 ) );
     memset( pTotalInfor, 0, sizeof(char)*( strlen( Total_Format ) + 10 ) );
     sprintf( pTotalInfor, Total_Format, ptrClientNode->totalTimeCounter );
+    printf( "%d\n", ptrClientNode->totalTimeCounter );
     if( aRpt == NULL ){
         printf( "%s",pTotalInfor );
         }
@@ -251,13 +256,16 @@ if( ptrMap ){
         }
     }// End for
 }// end if
+else{
+    printf("?????????????????????????\n");
+}
 
 //3. build tail
 if( NULL == aRpt ){
     printf( "%s", Tail );
 }
 
-
+rValue = true;
 SINGLE_FLOW_END
 
 return rValue;
@@ -315,7 +323,6 @@ bool insertClientBefore( Ptr_Client aClient, Ptr_Client before ){
 
     if( NULL == p ){//Empty Link list
         gTimer.pCurrentClient = aClient;
-        break;
     }
     else{
         aClient->pPre = p->pPre;
@@ -342,6 +349,9 @@ Ptr_Client findClient( const ClientID aClientID ){
     Ptr_Client rPtr;
 
     rPtr = gTimer.pCurrentClient;
+SINGLE_FLOW_BEGIN
+    BREAK_IF_TRUE( rPtr == NULL );
+
     while( rPtr != NULL && rPtr->mID != aClientID ){
         rPtr = rPtr->pNext;
     }
@@ -351,6 +361,7 @@ Ptr_Client findClient( const ClientID aClientID ){
             rPtr = rPtr->pPre;
         }
     }
+SINGLE_FLOW_END
 
     return rPtr;
 }
@@ -371,8 +382,8 @@ bool removeClient( Ptr_Client deleteNode ){
     SINGLE_FLOW_BEGIN
     if( findClient( deleteNode->mID ) )
     {
-        deleteNode->pPre->pNext = deleteNode->pNext;
-        deleteNode->pNext->pPre = deleteNode->pPre;
+        if( deleteNode->pPre ) deleteNode->pPre->pNext = deleteNode->pNext;
+        if( deleteNode->pNext ) deleteNode->pNext->pPre = deleteNode->pNext;
         if( gTimer.pCurrentClient == deleteNode ){
             gTimer.pCurrentClient = ( deleteNode->pPre ) ? ( deleteNode->pPre ) : deleteNode->pNext;
         }

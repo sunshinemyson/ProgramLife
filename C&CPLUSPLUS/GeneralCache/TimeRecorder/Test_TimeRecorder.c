@@ -43,17 +43,20 @@ bool Test_TR_BlackBox( void ){
 
     COMPILE_ASSERT( Cnt_Of_Array( tMap ) == client_cnt );
 
+    printf(" register a time slot for me\n");
     assert( startTimeRecorderWithClass(iClient, tMap, Cnt_Of_Array(tMap) ) );
 
+    printf(" log %d time for %d class\n", testDataSet[client_init_proc].mLog, testDataSet[client_init_proc].mWhich );
     assert( logTimeClass( iClient, client_init_proc,testDataSet[client_init_proc].mLog ) );
 
     assert( logTimeClass( iClient, client_work_proc, testDataSet[client_work_proc].mLog ) );
 
     assert( logTimeClass( iClient, client_deinit_proc, testDataSet[client_deinit_proc].mLog ) );
 
+    assert( buildReport( iClient, NULL ) );
+
     assert( stopTimerRecorder( iClient ) );
 
-    buildReport( iClient, NULL );
 
     return true;
 }

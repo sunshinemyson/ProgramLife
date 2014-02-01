@@ -4,3 +4,6 @@ bin/
 obj/
 *.gch
 *.layout
+*.cscope_file_list
+*.depend
+*.layout
