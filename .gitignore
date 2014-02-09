@@ -7,3 +7,4 @@ obj/
 *.cscope_file_list
 *.depend
 *.layout
+C&CPLUSPLUS/GeneralCache/doxygen/

@@ -6,8 +6,10 @@
 #include <stdio.h>
 
 ///! all internal typedef or macro should be move to another private definition file in the future
+
+///!
 typedef struct _TIME_CLASS_MAP_EXTEND{
-    TIME_CLASS_MAP mTCM;        /*!< client give this information */
+    TIME_CLASS_MAP mTCM;        /*!< client give this information(客户端指定结构) */
     unsigned int timeCounter;   /*!< time loged on this class */
 }TCME,*PTR_TCME;
 
