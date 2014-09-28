@@ -1,6 +1,7 @@
 import wx
 import time
 import subprocess
+import os
 
 app = wx.App(False)
 #frame = wx.Frame(None, wx.ID_ANY, "RemoteController")
@@ -14,42 +15,53 @@ class AdbConnection:
         print "hello"
 
 class RemoteDevices:
+    AndroidKeyDict={'Home' : 3,\
+                    'Back' : 4,\
+                    'Power': 26,\
+                        }
+    AdbCmdInputKeyEvent="sudo adb shell input keyevent "
+    AdbCmdInputTouchScreenSwipe="sudo adb shell input touchscreen swipe "
+    AdbCmdInputTouchScreenTap="sudo adb shell input touchscreen tap "
     def __init__(self):
         self.shellFile = "./catch_screen.sh"
     '''
     def __init__(self,dName, aCon):
-        self.deviceName = dName 
+        self.deviceName = dName
         self.adbConnection = aCon
     '''
     def UpdateScreen(self):
-        print("Remote Devices Update Screen Begin-->")
         s = time.clock()
         subprocess.call([self.shellFile], shell=True)
-        print("Remote Devices Update Screen End <-- %.6f"%(time.clock()-s))
+        print("UpdateScreen-- %.6f"%(time.clock()-s))
 
     def Click(self, point):
-        print("Click [%d,%d]"%(point.x,point.y))
-        command="sudo adb shell input touchscreen tap %d %d"%(point.x,point.y)
+        command="%s %d %d"%(self.AdbCmdInputTouchScreenTap,point.x,point.y)
         subprocess.call([command], shell=True)
 
     def ClickHome(self):
-        subprocess.call(["sudo adb shell input keyevent 3"], shell=True)
+        subprocess.call(["%s %d"%(self.AdbCmdInputKeyEvent,self.AndroidKeyDict['Home'])],shell=True)
+        print("Click Home ---")
 
     def ClickBack(self):
-        subprocess.call(["sudo adb shell input keyevent 3"], shell=True)
+        subprocess.call(["%s %d"%(self.AdbCmdInputKeyEvent,self.AndroidKeyDict['Back'])],shell=True)
+        print("Click Back ---")
 
     def ClickPower(self):
-        subprocess.call(["sudo adb shell input keyevent 26"], shell=True)
+        subprocess.call(["%s %d"%(self.AdbCmdInputKeyEvent,self.AndroidKeyDict['Power'])],shell=True)
+        print("Click Power---")
+
+    def DragMouse(self, start, end):
+        subprocess.call(["%s %d"%(self.AdbCmdInputTouchScreenSwipe,start.x,start.y, end.x, end.y)],shell=True)
 
 class RemoteView(wx.Window):
 	def __init__(self, parent, id, pos, rDevice):
 		wx.Window.__init__(self,parent,id,pos,size=(1024,600))
 		#self.SetBackgroundColour()
                 self.PngFile = "screenshot.png"
-                self.remoteDevice=rDevice 
-                
+                self.remoteDevice=rDevice
+
                 #Update Timer
-                self.timerUpdate = wx.Timer(self) 
+                self.timerUpdate = wx.Timer(self)
                 self.timerUpdate.Start(5000, False)
 
 		#install event handler
@@ -73,7 +85,7 @@ class RemoteView(wx.Window):
                 print "Left Mouse Down at (%d,%d)"%(event.GetX(),event.GetY())
             '''
             if( event.LeftUp() ):
-                #print "Left Mouse Up at (%d,%d)"%(event.GetX(),event.GetY()) 
+                #print "Left Mouse Up at (%d,%d)"%(event.GetX(),event.GetY())
                 self.remoteDevice.Click(wx.Point(event.GetX(),event.GetY()))
             #if( event.Moving() ):
                 #print "Mouse moving"
@@ -82,9 +94,15 @@ class RemoteView(wx.Window):
         def OnTimeOut(self,event):
             print "onTimeOut..."
             print time.ctime()
-            #1. Get Screen Short 
+            #1. Get Screen Short
             self.remoteDevice.UpdateScreen()
             self.Refresh()
+        '''
+        TODO: Auto Resize to screen size
+        def GetAutoSize(self):
+            print "Get Current screen size"
+            self.screenSize = self.remoteDevice.GetScreenSize()
+        '''
 
 class MainWindow(wx.Frame):
 	def __init__(self, parent, title):
@@ -92,13 +110,25 @@ class MainWindow(wx.Frame):
 		#1. Layout control
 		preCtrlHeight = 0
 		#1.1 First Column
-		self.deviceList=["0123456789ABCDEF",\
-                   "xxxxxxxxxxxxxxx",\
-                   "0123456789ABCDEF",\
-                   "xxxxxxxxxxxxxxx",\
-                   "0123456789ABCDEF",\
-                   "xxxxxxxxxxxxxxx"\
-                  ]
+		self.deviceList=[]
+
+                # Init devices list
+                devFound = False
+                while( devFound != True ):
+                    devProc=subprocess.Popen('adb devices', shell=True, stdout=subprocess.PIPE)
+
+                    devList=devProc.stdout.read()
+                    devListArray=devList.splitlines()
+                    for items in devListArray:
+                        for item in items.split():
+                            if( len(item.strip()) == 16 ):
+                                print("found device %s"%item)
+                                self.deviceList.append(item.strip())
+                                devFound = True
+                    if( devFound == False ):
+                        print("Please Make sure you have device connected!")
+                        wx.MessageDialog(self,message="Check Your Device Connection",caption="Device Not\
+                                         Found").Show(True)
 
 		self.deviceRadioList = wx.RadioBox(\
                                      self,\
@@ -138,7 +168,7 @@ class MainWindow(wx.Frame):
 
 		#2.2 Graphic View for remote picture
 		#screenShortSize=wx.Size(1024,600)
-	        rDevice = RemoteDevices()	
+	        rDevice = RemoteDevices()
 		screenShortPos = wx.Point(200,0)
 		self.remoteView = RemoteView(self,101,pos=screenShortPos,rDevice = rDevice)
 		self.remoteDevice = rDevice
@@ -156,8 +186,8 @@ class MainWindow(wx.Frame):
 	def onBackButtonClick(self, event):
 	    self.remoteDevice.ClickBack()
         def onPowerButtonClick(self, event):
-            self.remoteDevice.ClickBack()
-	    
+            self.remoteDevice.ClickPower()
+
 
 frame = MainWindow(None,"AndroidRemoteController")
 
