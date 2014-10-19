@@ -4,3 +4,4 @@ bin/
 obj/
 *.gch
 *.layout
+*.png

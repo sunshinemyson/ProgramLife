@@ -1,0 +1,5 @@
+#setup remote adb via ssh connection
+ANDROID_ADB_SERVER_PORT=`netstat -atn | awk ' /tcp/ {printf("%s\n",substr($4,index($4,":")+1,length($4) )) }' | sed -e "s/://g" | sort -rnu | awk '{array [$1] = $1} END {i=32768; again=1; while (again == 1) {if (array[i] == i) {i=i+1} else {print i; again=0}}}'`
+export ANDROID_ADB_SERVER_PORT
+
+setsid ssh -L $ANDROID_ADB_SERVER_PORT:127.0.0.1:5037 c3_pnd@10.127.10.54 -Nn
